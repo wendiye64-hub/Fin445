@@ -1,6 +1,35 @@
 # 法治水平与数字金融发展：跨国横截面分析
 
-第 1–6 步均已完成。运行唯一脚本 `analysis.py`，即可从 `data/` 下的输入文件重新生成全部输出。
+第 1–6 步均已完成。**[点击这里查看完整 Python 代码](analysis.py)**。脚本从 `data/` 下的输入文件重新生成全部输出；`outputs/` 中保存了本次运行的结果。
+
+## 代码过程与入口
+
+| 步骤 | 代码位置 | 生成的主要文件 |
+| --- | --- | --- |
+| 1. 读取、清洗、按 ISO3 合并 | [`merge_step1()`](analysis.py#L212) | `outputs/merged_all.csv`、`outputs/unmatched_countries.csv` |
+| 2. 统计缺失并形成完整样本 | [`missingness_step2()`](analysis.py#L272) | `outputs/missingness.csv`、`outputs/merged.csv` |
+| 3. 描述统计和绘图 | [`descriptives_step3()`](analysis.py#L304) | `outputs/descriptives.csv`、三张 PNG 图 |
+| 4. M1、M2、八个 M3 回归 | [`regressions_step4()`](analysis.py#L390) | `outputs/regressions.csv`、`outputs/m3_factors.csv` |
+| 5. 分组、VIF、Cook's distance | [`robustness_step5()`](analysis.py#L465) | `outputs/robustness_regressions.csv` 等 |
+| 6. 自动生成结论 | [`results_summary_step6()`](analysis.py#L585) | `outputs/results_summary.md` |
+
+[脚本末尾的主程序](analysis.py#L708)按上表顺序调用六个函数。所有回归用 `statsmodels.OLS(...).fit(cov_type="HC3")`，并在运行时把结果打印到终端。
+
+## 从 GitHub 下载并运行
+
+在终端执行以下命令（先安装 Python 3.12，使 `python3.12` 命令可用）：
+
+```bash
+git clone https://github.com/wendiye64-hub/Fin445.git
+cd Fin445
+python3.12 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python analysis.py
+```
+
+运行结束后查看 `outputs/regressions.csv`、`outputs/m3_factors.csv` 和 `outputs/results_summary.md`。三份分析输入 CSV 已包含在仓库的 `data/` 中，因此正常运行无需联网；脚本不会插补缺失值。
+
+如果是在已经配置好虚拟环境的本地项目目录中，只需运行 `.venv/bin/python analysis.py`。
 
 ## 数据来源和年份
 
@@ -16,21 +45,40 @@
 
 三个 WDI 控制变量统一取 2024 年。世界银行国家元数据中 `region.id = NA` 的地区和收入组汇总项均已剔除。WJP 官方文件自带 ISO3 国家代码，因而没有通过名称猜测国家代码。
 
-## 运行
+## 回归代码
 
-在当前项目目录，已创建的虚拟环境可直接运行：
+完整实现见 [`analysis.py` 第 390–463 行](analysis.py#L390-L463)。核心设定如下；M3 每次只放入一个法治分项：
 
-```bash
-.venv/bin/python analysis.py
+```python
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+
+OUTPUTS = Path("outputs")
+data = pd.read_csv(OUTPUTS / "merged.csv")
+data["log_gdp_per_capita"] = np.log(data["gdp_per_capita"])
+outcome = data["digital_payment_pct"]
+controls = ["log_gdp_per_capita", "internet_users_pct", "urban_population_pct"]
+
+def fit(predictors):
+    design = sm.add_constant(data[predictors], has_constant="add")
+    return sm.OLS(outcome, design).fit(cov_type="HC3")
+
+models = {
+    "M1": fit(["wjp_overall"]),
+    "M2": fit(["wjp_overall", *controls]),
+}
+for number in range(1, 9):
+    factor = f"wjp_f{number}"
+    models[f"M3_F{number}"] = fit([factor, *controls])
+
+for name, result in models.items():
+    print(name, "N =", int(result.nobs), "R² =", round(result.rsquared, 4))
+    print(result.summary())
 ```
 
-如需在新环境中重建，请使用 Python 3.12：
-
-```bash
-python3.12 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python analysis.py
-```
+这段可在项目根目录单独运行；若要生成全部数据、图表和结果文件，请执行上面的 `analysis.py`，其中还包含满秩检查、CSV 保存和多重检验校正。
 
 第 1–2 步只依赖 Python 标准库；图表和统计使用 pandas、NumPy、Matplotlib、Seaborn 与 statsmodels。脚本读取 `data/` 下三份 CSV；三份文件齐全时可离线运行。若后两份不存在，会尝试从世界银行官方数据源获取并生成。WJP 官方 CSV 是转置表，脚本会按其 ISO3 行转换为国家记录。`outputs/merged_all.csv` 是 142 个 WJP 国家的左连接底表，保留缺失；`outputs/merged.csv` 是后续描述统计和回归使用的完整样本，**最终 N = 84**。
 
