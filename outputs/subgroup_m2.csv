@@ -1,0 +1,5 @@
+income_group,n,wjp_coefficient,hc3_se,p_value,r_squared,note
+High income,6,-524.81583,3513.9839,0.88127694,0.86343087,small N; HC3 inference unstable
+Low income,12,111.83933,248.25615,0.65235015,0.19159618,small N; HC3 inference unstable
+Lower middle income,30,70.898816,80.763505,0.38002127,0.1238036,
+Upper middle income,36,25.920362,79.088471,0.74310915,0.29210862,

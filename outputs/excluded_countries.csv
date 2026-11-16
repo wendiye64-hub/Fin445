@@ -1,0 +1,59 @@
+iso3,country,missing_variables
+AFG,Afghanistan,digital_payment_pct; account_ownership_pct
+AGO,Angola,digital_payment_pct; account_ownership_pct
+ATG,Antigua and Barbuda,digital_payment_pct; account_ownership_pct
+AUS,Australia,digital_payment_pct
+AUT,Austria,digital_payment_pct
+BHS,The Bahamas,digital_payment_pct; account_ownership_pct
+BRB,Barbados,digital_payment_pct; account_ownership_pct
+BLR,Belarus,digital_payment_pct; account_ownership_pct
+BEL,Belgium,digital_payment_pct
+CAN,Canada,digital_payment_pct
+CHL,Chile,digital_payment_pct
+CYP,Cyprus,digital_payment_pct
+CZE,Czechia,digital_payment_pct
+DNK,Denmark,digital_payment_pct
+DMA,Dominica,digital_payment_pct; account_ownership_pct
+EST,Estonia,digital_payment_pct
+FIN,Finland,digital_payment_pct
+FRA,France,digital_payment_pct
+DEU,Germany,digital_payment_pct
+GRC,Greece,digital_payment_pct
+GRD,Grenada,digital_payment_pct; account_ownership_pct
+GUY,Guyana,digital_payment_pct; account_ownership_pct
+HTI,Haiti,digital_payment_pct; account_ownership_pct
+HKG,"Hong Kong SAR, China",digital_payment_pct
+HUN,Hungary,digital_payment_pct
+IRL,Ireland,digital_payment_pct
+ITA,Italy,digital_payment_pct
+JAM,Jamaica,digital_payment_pct; account_ownership_pct
+JPN,Japan,digital_payment_pct
+KOR,"Korea, Rep.",digital_payment_pct
+XKX,Kosovo,internet_users_pct
+KWT,Kuwait,digital_payment_pct
+LVA,Latvia,digital_payment_pct
+LTU,Lithuania,digital_payment_pct
+LUX,Luxembourg,digital_payment_pct; account_ownership_pct
+MLT,Malta,digital_payment_pct
+MMR,Myanmar,digital_payment_pct; account_ownership_pct; internet_users_pct
+NLD,Netherlands,digital_payment_pct
+NZL,New Zealand,digital_payment_pct
+NOR,Norway,digital_payment_pct
+PRT,Portugal,digital_payment_pct
+RUS,Russian Federation,digital_payment_pct
+RWA,Rwanda,digital_payment_pct; account_ownership_pct
+SGP,Singapore,digital_payment_pct
+SVK,Slovak Republic,digital_payment_pct
+SVN,Slovenia,digital_payment_pct
+ESP,Spain,digital_payment_pct
+KNA,St. Kitts and Nevis,digital_payment_pct; account_ownership_pct
+LCA,St. Lucia,digital_payment_pct; account_ownership_pct
+VCT,St. Vincent and the Grenadines,digital_payment_pct; account_ownership_pct
+SDN,Sudan,digital_payment_pct; account_ownership_pct; internet_users_pct
+SUR,Suriname,digital_payment_pct; account_ownership_pct; internet_users_pct
+SWE,Sweden,digital_payment_pct
+TTO,Trinidad and Tobago,digital_payment_pct
+ARE,United Arab Emirates,digital_payment_pct
+GBR,United Kingdom,digital_payment_pct
+USA,United States,digital_payment_pct
+URY,Uruguay,digital_payment_pct

@@ -1,0 +1,3 @@
+income_band,n,wjp_coefficient,hc3_se,p_value,r_squared
+Low + lower middle income,42,71.999659,61.332668,0.24042698,0.089507831
+Upper middle + high income,42,14.50391,61.686732,0.81411401,0.31413829
