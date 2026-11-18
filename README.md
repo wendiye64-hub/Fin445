@@ -2,6 +2,10 @@
 
 第 1–6 步均已完成。**[点击这里查看完整 Python 代码](analysis.py)**。脚本从 `data/` 下的输入文件重新生成全部输出；`outputs/` 中保存了本次运行的结果。
 
+## 课堂演讲
+
+[下载 5 分钟英文 PPT](presentation/fin445_5min_english.pptx)。共 5 页，每页的英文讲述内容写在 PowerPoint 演讲者备注中；第 3 页散点图可在 PowerPoint 中编辑。
+
 ## 代码过程与入口
 
 | 步骤 | 代码位置 | 生成的主要文件 |
