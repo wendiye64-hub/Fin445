@@ -1,4 +1,4 @@
-"""法治与数字金融发展的跨国分析；从 data/ 生成全部输出。"""
+"""Cross-country analysis of rule of law and digital finance using data/."""
 
 import csv
 import json
@@ -60,13 +60,13 @@ FACTOR_NAMES = {code: label.split(": ", 1)[1]
 
 
 def get_json(url):
-    """从世界银行 API 读取 JSON；失败时抛错，不填造数据。"""
+    """Read JSON from the World Bank API; raise errors instead of inventing data."""
     with urlopen(url, timeout=45) as response:
         return json.load(response)
 
 
 def read_wjp(path):
-    """WJP 官方 CSV 是转置表，第二行已经给出 ISO3 代码。"""
+    """Read the transposed official WJP CSV, whose second row contains ISO3 codes."""
     with path.open(newline="", encoding="utf-8-sig") as f:
         rows = list(csv.reader(f))
     if not rows or rows[0][0] != "Country":
@@ -103,7 +103,7 @@ def check_unique(rows, source):
 
 
 def world_bank_countries(api_data):
-    """World Bank 国家元数据中 region.id=NA 的记录是汇总项。"""
+    """Exclude World Bank aggregate entries, which have region.id set to NA."""
     return {
         row["id"]: row
         for row in api_data[1]
@@ -112,7 +112,7 @@ def world_bank_countries(api_data):
 
 
 def extract_findex(source_path, destination, valid_codes):
-    """从官方 Findex 原始文件提取同一调查年的国家级比例。"""
+    """Extract country-level rates for the selected survey year from the Findex file."""
     with source_path.open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         required = {"codewb", "countrynewwb", "year", "group", "group2", "g20_any", "account_t_d"}
@@ -123,7 +123,7 @@ def extract_findex(source_path, destination, valid_codes):
             if (row["year"] != str(FINDEX_YEAR) or row["group"] != "all"
                     or row["group2"] != "all" or row["codewb"] not in valid_codes):
                 continue
-            # 原始比例在 0–1 之间；输出改成百分比，缺失保持空白。
+            # Source rates are on a 0–1 scale; convert to percentages and leave missing values blank.
             def pct(name):
                 value = row[name]
                 return "" if value in ("", "NA") else float(value) * 100
@@ -153,7 +153,7 @@ def download_findex_if_missing(path, valid_codes):
 
 
 def extract_controls(api_results, destination, countries):
-    """从三个 WDI API 结果生成同一年控制变量表。"""
+    """Build the same-year controls table from three WDI API responses."""
     rows = {}
     for target, code in WDI_CODES.items():
         response = api_results[target]
@@ -215,7 +215,7 @@ def merge_step1():
     if not (DATA / "wjp.csv").exists():
         raise FileNotFoundError(f"缺少 data/wjp.csv：请从 WJP {WJP_YEAR} 官网下载官方 CSV。")
     wjp = read_wjp(DATA / "wjp.csv")
-    # 本地已有两份世界银行数据时，离线运行不再查询 API。
+    # Use the local World Bank files without an API call when both are available.
     need_download = not (DATA / "digital_finance.csv").exists() or not (DATA / "controls.csv").exists()
     countries = (world_bank_countries(
         get_json("https://api.worldbank.org/v2/country?format=json&per_page=500")
@@ -261,7 +261,7 @@ def merge_step1():
 
 
 def has_valid_value(row, variable):
-    """空值和非有限数不进入样本；GDP 取对数前必须大于零。"""
+    """Reject missing or nonfinite values; GDP must be positive before taking logs."""
     try:
         value = float(row.get(variable, ""))
     except (TypeError, ValueError):
@@ -270,7 +270,7 @@ def has_valid_value(row, variable):
 
 
 def missingness_step2(merged, fields):
-    """报告各变量原始缺失和顺序筛选新增剔除，保存完整样本。"""
+    """Report raw missingness and sequential exclusions, then save complete cases."""
     remaining = merged
     report = []
     for variable in ANALYSIS_VARIABLES:
@@ -302,7 +302,7 @@ def missingness_step2(merged, fields):
 
 
 def descriptives_step3():
-    """完整样本的描述统计、直方图、散点图和相关热力图。"""
+    """Create complete-case descriptives, histograms, scatter plot, and heatmap."""
     mpl_config = Path(__file__).parent / ".mplconfig"
     mpl_config.mkdir(exist_ok=True)
     os.environ.setdefault("MPLCONFIGDIR", str(mpl_config))
@@ -310,11 +310,11 @@ def descriptives_step3():
     import pandas as pd
     import matplotlib
 
-    matplotlib.use("Agg")  # 无图形界面的机器也能生成 PNG
+    matplotlib.use("Agg")  # Generate PNG files without a graphical display.
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    np.random.seed(2025)  # 固定随机种子；当前图表本身没有随机抽样
+    np.random.seed(2025)  # Fixed seed; these plots do not currently use random sampling.
     sns.set_theme(style="whitegrid", font_scale=0.95)
     data = pd.read_csv(OUTPUTS / "merged.csv")
     numbers = data[ANALYSIS_VARIABLES].apply(pd.to_numeric, errors="raise")
@@ -322,14 +322,14 @@ def descriptives_step3():
         raise ValueError("完整样本仍有缺失值，请先检查第 2 步。")
     n = len(numbers)
 
-    # pandas 的 std 默认是样本标准差（分母 N-1）。
+    # pandas uses the sample standard deviation by default (denominator N-1).
     summary = numbers.agg(["count", "mean", "std", "min", "max"]).T
     summary.index.name = "variable"
     summary = summary.rename(columns={"count": "n"}).reset_index()
     summary["n"] = summary["n"].astype(int)
     summary.to_csv(OUTPUTS / "descriptives.csv", index=False, float_format="%.6f")
 
-    # 14 个分析变量各一张小直方图，放在一个 4×4 面板中。
+    # Show one histogram per analysis variable in a 4×4 panel.
     fig, axes = plt.subplots(4, 4, figsize=(18, 14))
     for ax, variable in zip(axes.flat, ANALYSIS_VARIABLES):
         values = numbers[variable]
@@ -352,7 +352,7 @@ def descriptives_step3():
     fig.savefig(OUTPUTS / "histograms.png", dpi=300, bbox_inches="tight")
     plt.close(fig)
 
-    # 散点图的 R² 来自图中的一元最小二乘拟合线。
+    # The scatter plot's R² comes from the displayed simple least-squares fit.
     x = numbers["wjp_overall"].to_numpy()
     y = numbers["digital_payment_pct"].to_numpy()
     slope, intercept = np.polyfit(x, y, deg=1)
@@ -388,7 +388,7 @@ def descriptives_step3():
 
 
 def regressions_step4():
-    """M1、M2 和八个单独分项模型；标准误统一使用 HC3。"""
+    """Fit M1, M2, and eight separate factor models with HC3 standard errors."""
     import numpy as np
     import pandas as pd
     import statsmodels.api as sm
@@ -409,7 +409,7 @@ def regressions_step4():
         "M1": fit(["wjp_overall"]),
         "M2": fit(["wjp_overall", *controls]),
     }
-    # M3 用一个分项替换总分，避免总分与其组成部分同时进入模型。
+    # M3 replaces the overall score with one factor to avoid including both together.
     for number in range(1, 9):
         factor = f"wjp_f{number}"
         models[f"M3_F{number}"] = fit([factor, *controls])
@@ -463,7 +463,7 @@ def regressions_step4():
 
 
 def robustness_step5():
-    """按收入组重跑 M2、计算 VIF、剔除 Cook's distance 最大的五国。"""
+    """Rerun M2 by income group, calculate VIF, and remove the five largest Cook's distances."""
     import numpy as np
     import pandas as pd
     import statsmodels.api as sm
@@ -517,7 +517,7 @@ def robustness_step5():
     subgroup_table = pd.DataFrame(subgroup_rows)
     subgroup_table.to_csv(OUTPUTS / "subgroup_m2.csv", index=False, float_format="%.8g")
 
-    # 2024 年高收入组仅 6 国；合并相邻收入档再估计一组较稳定的分层结果。
+    # Only six high-income countries remain in 2024; pool adjacent income groups.
     broad_groups = {
         "Low income": "Low + lower middle income",
         "Lower middle income": "Low + lower middle income",
@@ -542,7 +542,7 @@ def robustness_step5():
     pooled_table.to_csv(OUTPUTS / "subgroup_m2_pooled.csv", index=False,
                         float_format="%.8g")
 
-    # VIF 在包含截距的 M2 设计矩阵上计算，但只报告四个解释变量。
+    # Calculate VIF with an intercept in the M2 design, but report only predictors.
     full_design = design_for(data)
     vif_table = pd.DataFrame([
         {"variable": name,
@@ -551,7 +551,7 @@ def robustness_step5():
     ])
     vif_table.to_csv(OUTPUTS / "vif.csv", index=False, float_format="%.8g")
 
-    # Cook's distance 是影响度量；同时保存帽子矩阵对角线作为杠杆值。
+    # Cook's distance measures influence; save the hat-matrix diagonal as leverage.
     plain_m2 = sm.OLS(data["digital_payment_pct"], full_design).fit()
     influence = plain_m2.get_influence()
     ranked = data[["iso3", "country"]].copy()
@@ -583,7 +583,7 @@ def robustness_step5():
 
 
 def results_summary_step6():
-    """从已保存的数值结果自动生成中文解释，避免手抄回归数字。"""
+    """Generate the Chinese results summary from saved values to avoid manual copying."""
     import pandas as pd
 
     regressions = pd.read_csv(OUTPUTS / "regressions.csv")
