@@ -4,7 +4,7 @@ This repository contains a reproducible 2024 cross-country analysis. Run [`analy
 
 ## Five-minute presentation
 
-[Download the updated English PowerPoint with the correlation heatmap](presentation/fin445_5min_english_heatmap.pptx). It has six slides and English speaker notes. Slide 3 contains an editable scatter chart; slide 4 embeds the correlation heatmap. The [earlier five-slide version](presentation/fin445_5min_english.pptx) is also available.
+[Download the current English PowerPoint](presentation/fin445_5min_english_revised.pptx). It has six speaking slides plus a final data-source reference slide, with English speaker notes. Slide 3 contains an editable scatter chart, slide 4 embeds the correlation heatmap, and slide 5 contains an editable regression summary table drawn from the output CSV files. The [earlier version](presentation/fin445_5min_english_heatmap.pptx) is still available.
 
 ## Run the project
 
